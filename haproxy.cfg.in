@@ -1,0 +1,47 @@
+global
+    log 127.0.0.1    local0
+    log 127.0.0.1    local1 notice
+    tune.ssl.default-dh-param 2048
+    maxconn 4096
+
+defaults
+    log global
+    mode http
+    timeout connect 5s
+    timeout client 50s
+    timeout server 50s
+    option httplog
+    option dontlognull
+    option forwardfor
+    option http-server-close
+    stats enable
+    stats auth timon:%STATS_PASSWORD%
+    stats uri /haproxyStats
+
+
+frontend web
+    bind *:80
+    bind *:443 ssl crt /tmp/server.pem
+    redirect scheme https if !{ ssl_fc }
+
+    acl url_wsxmpp path_beg /ws-xmpp
+    acl host_meet hdr_beg(host) -i meet
+
+    use_backend zazu_wsxmpp if url_wsxmpp host_meet
+    use_backend simba if host_meet
+
+    default_backend simba
+
+backend zazu_wsxmpp
+    balance leastconn
+    timeout client 5m
+    timeout server 5m
+
+    server zazu1 %ZAZUWS_HOST% check
+
+backend simba
+    balance leastconn
+    option httpclose
+    option forwardfor
+
+    server simba1 %SIMBA_HOST% check
