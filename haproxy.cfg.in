@@ -34,9 +34,6 @@ frontend web
 
 backend zazu_wsxmpp
     balance leastconn
-    timeout client 5m
-    timeout server 5m
-
     server zazu1 %ZAZUWS_HOST% check
 
 backend simba
