@@ -1,0 +1,12 @@
+sudo: required
+
+services:
+  - docker
+  
+script:
+  - docker build -t timon .
+  
+after_success:
+- docker tag timon connecter/timon:travis
+- docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+- docker push connecter/timon:travis
